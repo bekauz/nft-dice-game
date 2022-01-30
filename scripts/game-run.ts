@@ -15,7 +15,8 @@ async function main() {
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
 
-
+    let mintedTokenId = await gameContract.mintCharacterNFT(1);
+    await mintedTokenId.wait();
 }
 
 main()

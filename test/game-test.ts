@@ -1,13 +1,45 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Signer } from "ethers";
+import { Contract, ContractFactory, Signer } from "ethers";
+import { assert } from "console";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 
 describe("Game contract", function () {
-  it("Should deploy the contract ", async function () {
-    const GameFactory = await ethers.getContractFactory("Game");
-    const game = await GameFactory.deploy();
-    await game.deployed();
-    
+
+  let owner: SignerWithAddress;
+  let addr1: SignerWithAddress;
+  let addr2: SignerWithAddress;
+
+  let gameContractFactory: ContractFactory;
+  let gameContract: Contract;
+
+  beforeEach(async function () {
+
+    [owner, addr1, addr2] = await ethers.getSigners();
+    gameContractFactory = await ethers.getContractFactory('Game');
+    gameContract = await gameContractFactory.deploy(
+        ["test-1", "test-2", "test-3"], // names
+        [
+            "https://i.imgur.com/aodcS9h.jpeg",
+            "https://i.imgur.com/rBw3HgN.jpeg",
+            "https://i.imgur.com/xIHzkoA.jpeg"
+        ], // imgURIs
+        [100, 110, 120], // initial funds
+        [12, 20, 30], // wager sizes
+    );
+    await gameContract.deployed();
+  });
+
+  it("Should allow a user to mint a character", async function () {
+
+    expect(await gameContract.connect(owner).mintCharacterNFT(1))
+      .to.emit(gameContract, "CharacterMint").withArgs(0, "test-2");
+    expect(await gameContract.ownerCharacterIds(owner.address)).to.equal(0);
+    const mintedTokenMetadata = await gameContract.characterMetadata(0);
+    expect(mintedTokenMetadata.name).to.equal("test-2");
+    expect(mintedTokenMetadata.currentFunds).to.equal(110);
+    expect(mintedTokenMetadata.maxFunds).to.equal(110);
+    expect(mintedTokenMetadata.wagerSize).to.equal(20);
   });
 });
