@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
-
+import "./libs/Base64.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -24,7 +24,9 @@ contract Game is ERC721 {
 
     CharacterTraits[] defaultTraits;
 
+    // nft id to its attributes
     mapping(uint256 => CharacterTraits) public characterMetadata;
+    // address to its owned token id
     mapping(address => uint256) public ownerCharacterIds;
 
     event CharacterMint(uint256 tokenId, string name);
@@ -71,5 +73,30 @@ contract Game is ERC721 {
         console.log("Minted character #%s with traits index %s", nextTokenId, _characterIndex);
         emit CharacterMint(nextTokenId, characterMetadata[nextTokenId].name);
         return nextTokenId;
+    }
+
+    function tokenURI(uint256 _tokenId) public view override returns (string memory) {
+
+        CharacterTraits memory charTraits = characterMetadata[_tokenId];
+
+        string memory currentFundsStr = Strings.toString(charTraits.currentFunds);
+        string memory maxFundsStr = Strings.toString(charTraits.maxFunds);
+        string memory wagerSizeStr = Strings.toString(charTraits.wagerSize);
+
+        string memory json = Base64.encode(abi.encodePacked(
+            '{"name": "', charTraits.name,
+                ' -- NFT #: ', Strings.toString(_tokenId),
+                '", "description": "NFT that is used to play the dice game.", "image": "',
+                charTraits.imageURI,
+                '", "attributes": [ { "trait_type": "Funds", "value": ',currentFundsStr,', "max_value":',maxFundsStr,'}, { "trait_type": "Wager Size", "value": ',
+                wagerSizeStr,
+            '} ]}'
+        ));
+    
+        string memory output = string(
+            abi.encodePacked("data:application/json;base64,", json)
+        );
+
+        return output;
     }
 }

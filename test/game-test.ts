@@ -42,4 +42,12 @@ describe("Game contract", function () {
     expect(mintedTokenMetadata.maxFunds).to.equal(110);
     expect(mintedTokenMetadata.wagerSize).to.equal(20);
   });
+
+  it("Should generate tokenURI", async function () {
+    await gameContract.connect(owner).mintCharacterNFT(1);
+    let generatedTokenURI = await gameContract.tokenURI(1);
+    const b64Metadata: String = "data:application/json;base64";
+    expect(generatedTokenURI.startsWith(b64Metadata)).to.be.true;
+    expect(generatedTokenURI.length > b64Metadata.length).to.be.true;
+  });
 });
