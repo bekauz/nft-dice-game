@@ -1,6 +1,13 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { run, ethers } from "hardhat"
 
 async function main() {
+    let owner: SignerWithAddress;
+    let addr1: SignerWithAddress;
+    let addr2: SignerWithAddress;
+
+    [owner, addr1, addr2] = await ethers.getSigners();
+
     const gameContractFactory = await ethers.getContractFactory('Game');
     const gameContract = await gameContractFactory.deploy(
         ["test-1", "test-2", "test-3"], // names
@@ -11,12 +18,19 @@ async function main() {
         ], // imgURIs
         [100, 110, 120], // initial funds
         [12, 20, 30], // wager sizes
+        "test-4",
+        "https://i.imgur.com/TcIFNT0.jpeg",
+        1500,
+        40,
     );
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
 
-    let mintedTokenId = await gameContract.mintCharacterNFT(1);
-    await mintedTokenId.wait();
+    let txn = await gameContract.mintCharacterNFT(1);
+    await txn.wait();
+    
+    txn = await gameContract.rollTheDice();
+    await txn.wait();
 }
 
 main()

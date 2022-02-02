@@ -27,6 +27,10 @@ describe("Game contract", function () {
         ], // imgURIs
         [100, 110, 120], // initial funds
         [12, 20, 30], // wager sizes
+        "test-4",
+        "https://i.imgur.com/TcIFNT0.jpeg",
+        1500,
+        40
     );
     await gameContract.deployed();
   });
