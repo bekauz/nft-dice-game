@@ -160,6 +160,7 @@ contract Game is ERC721 {
         console.log("opponent roll: %s", opponentRoll);
 
         if (playerRoll > opponentRoll) {
+            // opponent loses and gives away his wager to the player
             if (opponent.currentFunds >= opponent.wagerSize) {
                 playerCharacter.currentFunds += opponent.wagerSize;
                 opponent.currentFunds -= opponent.wagerSize;
@@ -168,6 +169,7 @@ contract Game is ERC721 {
                 opponent.currentFunds = 0;
             }
         } else {
+            // player loses and gives away his wager to the opponent
             if (playerCharacter.currentFunds >= playerCharacter.wagerSize) {
                 opponent.currentFunds += playerCharacter.wagerSize;
                 playerCharacter.currentFunds -= playerCharacter.wagerSize;
@@ -178,7 +180,7 @@ contract Game is ERC721 {
         }
 
         console.log(
-            "Player funds: %s / %s", 
+            "Player funds: %s / %s",
             playerCharacter.currentFunds,
             playerCharacter.maxFunds
         );

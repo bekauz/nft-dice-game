@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Contract, ContractFactory, Signer } from "ethers";
+import { BigNumber, Contract, ContractFactory, Signer } from "ethers";
 import { assert } from "console";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
@@ -38,9 +38,9 @@ describe("Game contract", function () {
   it("Should allow a user to mint a character", async function () {
 
     expect(await gameContract.connect(owner).mintCharacterNFT(1))
-      .to.emit(gameContract, "CharacterMint").withArgs(0, "test-2");
-    expect(await gameContract.ownerCharacterIds(owner.address)).to.equal(0);
-    const mintedTokenMetadata = await gameContract.characterMetadata(0);
+      .to.emit(gameContract, "CharacterMint").withArgs(1, "test-2");
+    expect(await gameContract.ownerCharacterIds(owner.address)).to.equal(1);
+    const mintedTokenMetadata = await gameContract.characterMetadata(1);
     expect(mintedTokenMetadata.name).to.equal("test-2");
     expect(mintedTokenMetadata.currentFunds).to.equal(110);
     expect(mintedTokenMetadata.maxFunds).to.equal(110);
@@ -53,5 +53,39 @@ describe("Game contract", function () {
     const b64Metadata: String = "data:application/json;base64";
     expect(generatedTokenURI.startsWith(b64Metadata)).to.be.true;
     expect(generatedTokenURI.length > b64Metadata.length).to.be.true;
+  });
+
+  it("Should roll the dice and deduct the wager given sufficient funds", async function () {
+    
+    let txn;
+    txn = await gameContract.connect(owner).mintCharacterNFT(1);
+    txn.wait();
+
+    const playerNftId = await gameContract.ownerCharacterIds(owner.address);
+
+    let playerNft = await gameContract.characterMetadata(playerNftId);
+    let opponent = await gameContract.opponent();
+
+    txn = await gameContract.rollTheDice();
+    txn.wait();
+
+    let playerNftAfterRoll = await gameContract.characterMetadata(playerNftId);
+    let opponentAfterRoll = await gameContract.opponent();
+
+    if (
+      BigNumber.from(playerNftAfterRoll.currentFunds).lt(playerNftAfterRoll.maxFunds)
+    ) {
+      // player lost the roll
+      expect(playerNftAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(playerNft.maxFunds).sub(playerNft.wagerSize));
+      expect(opponentAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(opponent.maxFunds).add(playerNft.wagerSize));
+    } else {
+      // opponent lost the roll  
+      expect(opponentAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(opponent.maxFunds).sub(opponent.wagerSize));
+      expect(playerNftAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(playerNftAfterRoll.maxFunds).add(opponent.wagerSize));
+    }
   });
 });
