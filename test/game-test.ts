@@ -63,29 +63,74 @@ describe("Game contract", function () {
 
     const playerNftId = await gameContract.ownerCharacterIds(owner.address);
 
-    let playerNft = await gameContract.characterMetadata(playerNftId);
-    let opponent = await gameContract.opponent();
+    let playerPreRoll = await gameContract.characterMetadata(playerNftId);
+    let opponentPreRoll = await gameContract.opponent();
 
     txn = await gameContract.rollTheDice();
     txn.wait();
 
-    let playerNftAfterRoll = await gameContract.characterMetadata(playerNftId);
+    let playerAfterRoll = await gameContract.characterMetadata(playerNftId);
     let opponentAfterRoll = await gameContract.opponent();
 
     if (
-      BigNumber.from(playerNftAfterRoll.currentFunds).lt(playerNftAfterRoll.maxFunds)
+      BigNumber.from(playerAfterRoll.currentFunds).lt(playerAfterRoll.maxFunds)
     ) {
       // player lost the roll
-      expect(playerNftAfterRoll.currentFunds).to.be
-        .equal(BigNumber.from(playerNft.maxFunds).sub(playerNft.wagerSize));
+      expect(playerAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(playerPreRoll.maxFunds).sub(playerPreRoll.wagerSize));
       expect(opponentAfterRoll.currentFunds).to.be
-        .equal(BigNumber.from(opponent.maxFunds).add(playerNft.wagerSize));
+        .equal(BigNumber.from(opponentPreRoll.maxFunds).add(playerPreRoll.wagerSize));
     } else {
       // opponent lost the roll  
       expect(opponentAfterRoll.currentFunds).to.be
-        .equal(BigNumber.from(opponent.maxFunds).sub(opponent.wagerSize));
-      expect(playerNftAfterRoll.currentFunds).to.be
-        .equal(BigNumber.from(playerNftAfterRoll.maxFunds).add(opponent.wagerSize));
+        .equal(BigNumber.from(opponentPreRoll.maxFunds).sub(opponentPreRoll.wagerSize));
+      expect(playerAfterRoll.currentFunds).to.be
+        .equal(BigNumber.from(playerAfterRoll.maxFunds).add(opponentPreRoll.wagerSize));
+    }
+  });
+
+  it(
+    "Should roll the dice and nullify the balance given insufficient funds but more than 0", async function () {
+    // redeploy contract with insufficient funds
+    gameContract = await gameContractFactory.deploy(
+        ["test-1", "test-2", "test-3"],
+        [
+            "https://i.imgur.com/aodcS9h.jpeg",
+            "https://i.imgur.com/rBw3HgN.jpeg",
+            "https://i.imgur.com/xIHzkoA.jpeg"
+        ],
+        [10, 10, 10],
+        [12, 20, 30],
+        "test-4",
+        "https://i.imgur.com/TcIFNT0.jpeg",
+        30,
+        40
+    );
+    await gameContract.deployed();
+
+    let txn;
+    txn = await gameContract.connect(owner).mintCharacterNFT(1);
+    txn.wait();
+
+    const playerNftId = await gameContract.ownerCharacterIds(owner.address);
+
+    let playerPreRoll = await gameContract.characterMetadata(playerNftId);
+    let opponentPreRoll = await gameContract.opponent();
+    txn = await gameContract.rollTheDice();
+    txn.wait();
+    let playerAfterRoll = await gameContract.characterMetadata(playerNftId);
+    let opponentAfterRoll = await gameContract.opponent();
+
+    if (BigNumber.from(playerAfterRoll.currentFunds).lt(playerAfterRoll.maxFunds)) {
+      // player lost the roll
+      expect(BigNumber.from(playerAfterRoll.currentFunds).isZero());
+      expect(BigNumber.from(opponentAfterRoll.currentFunds)).to.be
+        .equal(BigNumber.from(opponentPreRoll.currentFunds).add(playerPreRoll.currentFunds));
+    } else {
+      // opponent lost the roll  
+      expect(BigNumber.from(opponentAfterRoll.currentFunds).isZero());
+      expect(BigNumber.from(playerAfterRoll.currentFunds)).to.be
+        .equal(BigNumber.from(playerPreRoll.currentFunds).add(opponentPreRoll.currentFunds));
     }
   });
 });
