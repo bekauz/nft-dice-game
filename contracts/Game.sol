@@ -132,8 +132,8 @@ contract Game is ERC721 {
         CharacterTraits storage playerCharacter = characterMetadata[tokenId];
 
         require(tokenId > 0, "No NFT found for this address");
-        require(playerCharacter.currentFunds > 0, "Player has no funds");
-        require(opponent.currentFunds > 0, "Opponent has no funds");
+        require(playerCharacter.currentFunds > 0, "player has no funds");
+        require(opponent.currentFunds > 0, "opponent has no funds");
 
         console.log(
             "Player with tokenId about to roll the dice with %s / %s funds with wager size of %s",

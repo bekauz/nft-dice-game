@@ -133,4 +133,48 @@ describe("Game contract", function () {
         .equal(BigNumber.from(playerPreRoll.currentFunds).add(opponentPreRoll.currentFunds));
     }
   });
+
+  it("Should roll the dice until player or the opponent has no more funds then throw", async function () {
+    // redeploy with enough funds for 2 losses
+    gameContract = await gameContractFactory.deploy(
+      ["test-1", "test-2", "test-3"], // names
+      [
+          "https://i.imgur.com/aodcS9h.jpeg",
+          "https://i.imgur.com/rBw3HgN.jpeg",
+          "https://i.imgur.com/xIHzkoA.jpeg"
+      ], // imgURIs
+      [20, 30, 40], // initial funds
+      [12, 20, 30], // wager sizes
+      "test-4",
+      "https://i.imgur.com/TcIFNT0.jpeg",
+      70,
+      40
+    );
+    await gameContract.deployed();
+
+    let txn;
+    txn = await gameContract.connect(owner).mintCharacterNFT(1);
+    txn.wait();
+
+    const playerNftId = await gameContract.ownerCharacterIds(owner.address);
+
+    let player = await gameContract.characterMetadata(playerNftId);
+    let opponent = await gameContract.opponent();
+
+    while (player.currentFunds != 0 || opponent.currentFunds != 0) {
+      try {
+        txn = await gameContract.rollTheDice();
+        txn.wait();
+      } catch (error: any) {
+        let loser = (player.currentFunds == 0) ? 'player' : 'opponent';
+        expect(error.message).to.contain(
+          `VM Exception while processing transaction: reverted with reason string '${loser} has no funds'`
+        );
+        break;
+      } finally {
+        player = await gameContract.characterMetadata(playerNftId);
+        opponent = await gameContract.opponent();
+      }
+    }
+  });
 });
