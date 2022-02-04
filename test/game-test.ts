@@ -163,8 +163,7 @@ describe("Game contract", function () {
 
     while (player.currentFunds != 0 || opponent.currentFunds != 0) {
       try {
-        txn = await gameContract.rollTheDice();
-        txn.wait();
+        await gameContract.rollTheDice();  
       } catch (error: any) {
         let loser = (player.currentFunds == 0) ? 'player' : 'opponent';
         expect(error.message).to.contain(
@@ -176,5 +175,12 @@ describe("Game contract", function () {
         opponent = await gameContract.opponent();
       }
     }
+  });
+
+  it("Should emit DiceRoll event", async function () {
+    let txn = await gameContract.connect(owner).mintCharacterNFT(1);
+    txn.wait();
+    await expect(gameContract.rollTheDice()).to
+      .emit(gameContract, "DiceRoll");
   });
 });

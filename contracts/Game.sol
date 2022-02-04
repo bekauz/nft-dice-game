@@ -41,6 +41,7 @@ contract Game is ERC721 {
 
 
     event CharacterMint(uint256 tokenId, string name);
+    event DiceRoll(uint256 playerRoll, uint256 opponentRoll);
 
     constructor(
         string[] memory names,
@@ -156,6 +157,8 @@ contract Game is ERC721 {
             opponentRoll = generateSeeminglyRandomNumber(opponent.name);
         }
 
+        emit DiceRoll(playerRoll, opponentRoll);
+
         console.log("player roll: %s", playerRoll);
         console.log("opponent roll: %s", opponentRoll);
 
@@ -177,18 +180,7 @@ contract Game is ERC721 {
                 opponent.currentFunds += playerCharacter.currentFunds;
                 playerCharacter.currentFunds = 0;
             }
-        }
-
-        console.log(
-            "Player funds: %s / %s",
-            playerCharacter.currentFunds,
-            playerCharacter.maxFunds
-        );
-        console.log(
-            "Opponent funds: %s / %s",
-            opponent.currentFunds,
-            opponent.maxFunds
-        );
+        }   
     }
 
     function generateSeeminglyRandomNumber(string memory name) private view returns (uint256) {
@@ -204,5 +196,25 @@ contract Game is ERC721 {
         ) % 269;
         // two D6 rolls range = [2, 12]
         return (_randNumber % 11) + 2;
+    }
+
+    function getUserNFT() public view returns (CharacterTraits memory) {
+
+        uint256 userNFTId = ownerCharacterIds[msg.sender];
+        
+        if (userNFTId == 0) {
+            CharacterTraits memory noNFT;
+            return noNFT;
+        } else {
+            return characterMetadata[userNFTId];
+        }
+    }
+
+    function getDefaultCharacterTraits() public view returns (CharacterTraits[] memory) {
+        return defaultTraits;
+    }
+
+    function getOpponent() public view returns (Opponent memory) {
+        return opponent;
     }
 }

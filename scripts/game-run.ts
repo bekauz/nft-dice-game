@@ -16,8 +16,8 @@ async function main() {
             "https://i.imgur.com/rBw3HgN.jpeg",
             "https://i.imgur.com/xIHzkoA.jpeg"
         ], // imgURIs
-        [100, 110, 120], // initial funds
-        [12, 20, 30], // wager sizes
+        [100, 1, 120], // initial funds
+        [12, 10, 30], // wager sizes
         "test-4",
         "https://i.imgur.com/TcIFNT0.jpeg",
         1500,
@@ -31,7 +31,16 @@ async function main() {
     
     txn = await gameContract.rollTheDice();
     await txn.wait();
-}
+
+    txn = await gameContract.rollTheDice();
+    await txn.wait();
+
+    txn = await gameContract.rollTheDice();
+    await txn.wait();    txn = await gameContract.rollTheDice();
+    await txn.wait();    txn = await gameContract.rollTheDice();
+    await txn.wait();    txn = await gameContract.rollTheDice();
+    await txn.wait();
+  }
 
 main()
   .then(() => process.exit(0))

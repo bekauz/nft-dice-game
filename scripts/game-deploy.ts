@@ -9,21 +9,24 @@ async function main() {
             "https://i.imgur.com/rBw3HgN.jpeg",
             "https://i.imgur.com/xIHzkoA.jpeg"
         ], // imgURIs
-        [100, 110, 120], // initial funds
-        [12, 20, 30], // wager sizes
+        [100, 125, 120], // initial funds
+        [50, 30, 10], // wager sizes
         "test-4",
         "https://i.imgur.com/TcIFNT0.jpeg",
         1500,
-        40,
+        70,
     );
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
 
-    let tokenId1 = await gameContract.mintCharacterNFT(0);
-    let tokenId2 = await gameContract.mintCharacterNFT(1);
-    let tokenId3 = await gameContract.mintCharacterNFT(2);
-    let tokenId4 = await gameContract.mintCharacterNFT(1);
+    let txn = await gameContract.mintCharacterNFT(1);
+    await txn.wait();
 
+    txn = await gameContract.rollTheDice();
+    await txn.wait();
+
+    txn = await gameContract.rollTheDice();
+    await txn.wait();
 }
 
 main()
