@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import SelectCharacter from "./components/SelectCharacter/SelectCharacter";
 import { ethers } from "ethers";
 import { Web3Provider } from '@ethersproject/providers';
 
@@ -9,6 +9,7 @@ declare var window: any
 function App() {
 
   const [currentAccount, setCurrentAccount] = useState<string | undefined>(undefined);
+  const [characterNFT, setCharacterNFT] = useState(null);
 
   const checkWalletConnection =  async () => {
     try {
@@ -37,15 +38,60 @@ function App() {
     }
   };
 
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        alert("No Metamask found");
+        return;
+      }
+
+      const accounts = await ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      console.log(`Connected: ${accounts[0]}`);
+      setCurrentAccount(accounts[0]);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const renderContent = () => {
+    if (!currentAccount) {
+      return (
+        <div className="connect-wallet-container">
+          <button 
+            className="cta-button connect-wallet-button" 
+            onClick={ connectWallet }
+          >
+            Connect the wallet on Rinkeby to play
+          </button>
+        </div>
+      );
+    } else if (currentAccount && !characterNFT) {
+      return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
+    } else {
+      return (
+        <div></div>
+      );
+    }
+  };
+
   useEffect(() => {
     checkWalletConnection();
   }, []);
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-      </header>
+      <div className="data-container">
+        <div className="header-container">
+          <p className="header">Dice game</p>
+          <p className="sub-header">Connect the wallet on Rinkeby to play</p>
+        </div>
+        {renderContent()}
+      </div>
     </div>
   );
 }
