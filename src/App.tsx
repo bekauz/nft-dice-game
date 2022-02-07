@@ -12,7 +12,11 @@ declare var window: any
 function App() {
 
   const [currentAccount, setCurrentAccount] = useState<string | undefined>(undefined);
-  const [characterNFT, setCharacterNFT] = useState({});
+  const [characterNFT, setCharacterNFT] = useState(undefined);
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
 
   const checkWalletConnection =  async () => {
     try {
@@ -29,8 +33,8 @@ function App() {
         const accounts: any[] = await provider.send("eth_requestAccounts", []);
         
         if (accounts.length > 0) {
-          const account: string = accounts[0];
-          console.log('Found an authorized account:', account, typeof account);
+          const account = accounts[0];
+          console.log('Found an authorized account:', account);
           setCurrentAccount(account);
         } else {
           console.log("No account found.");
@@ -63,6 +67,7 @@ function App() {
 
   const renderContent = () => {
     if (!currentAccount) {
+      console.log("no authenticated account found");
       return (
         <div className="connect-wallet-container">
           <button 
@@ -74,6 +79,7 @@ function App() {
         </div>
       );
     } else if (currentAccount && !characterNFT) {
+      console.log("authenticated with no nft");
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
     } else {
       return (
@@ -93,34 +99,25 @@ function App() {
     }
   };
 
-  const fetchUserNFT = async () => {
-
-    const provider: Web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer: JsonRpcSigner = provider.getSigner();
-    
-    const gameContract: Contract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      gameABI.abi,
-      signer
-    );
-
-    const txn = await gameContract.getUserNFT();
-    if (txn.name) {
-      console.log(`Found ${txn.name} character for user`);
-      setCharacterNFT(transformCharacterData(txn));
-    } else {
-      console.log('No character found');
-    }
-  };
-
-
   useEffect(() => {
-    checkWalletConnection();
-  }, []);
-
-  useEffect(() => {
-
-    fetchUserNFT();
+    const fetchUserNFT = async () => {
+      const provider: Web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer: JsonRpcSigner = provider.getSigner();
+      const gameContract: Contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        gameABI.abi,
+        signer
+      );
+  
+      const userNFT = await gameContract.getUserNFT();
+      if (userNFT.name) {
+        console.log(`Found ${userNFT.name} character for user`);
+        let transformedUserNFT: any = transformCharacterData(userNFT); 
+        setCharacterNFT(transformedUserNFT);
+      } else {
+        console.log('No character found');
+      }
+    };
 
     if (currentAccount) {
       console.log(`Authenticated with ${currentAccount}`);

@@ -1,5 +1,6 @@
 import { ethers } from "hardhat"
 
+
 async function main() {
     const gameContractFactory = await ethers.getContractFactory('Game');
     const gameContract = await gameContractFactory.deploy(
@@ -18,15 +19,6 @@ async function main() {
     );
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
-
-    let txn = await gameContract.mintCharacterNFT(1);
-    await txn.wait();
-
-    txn = await gameContract.rollTheDice();
-    await txn.wait();
-
-    txn = await gameContract.rollTheDice();
-    await txn.wait();
 }
 
 main()
