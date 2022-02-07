@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import SelectCharacter from "./components/SelectCharacter/SelectCharacter";
-import { ethers } from "ethers";
-import { Web3Provider } from '@ethersproject/providers';
+import { Contract, ethers } from "ethers";
+import { JsonRpcProvider, JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
+import gameABI from "./utils/Game.json";
+
 
 declare var window: any
 
 function App() {
 
   const [currentAccount, setCurrentAccount] = useState<string | undefined>(undefined);
-  const [characterNFT, setCharacterNFT] = useState(null);
+  const [characterNFT, setCharacterNFT] = useState({});
 
   const checkWalletConnection =  async () => {
     try {
@@ -79,9 +82,51 @@ function App() {
     }
   };
 
+  const networkCheck = async () => {
+    try {
+      // 4 = rinkeby chain id
+      if (window.ethereum.networkVersion !== '4') {
+        alert("Change you network to Rinkeby to use the dapp");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchUserNFT = async () => {
+
+    const provider: Web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer: JsonRpcSigner = provider.getSigner();
+    
+    const gameContract: Contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      gameABI.abi,
+      signer
+    );
+
+    const txn = await gameContract.getUserNFT();
+    if (txn.name) {
+      console.log(`Found ${txn.name} character for user`);
+      setCharacterNFT(transformCharacterData(txn));
+    } else {
+      console.log('No character found');
+    }
+  };
+
+
   useEffect(() => {
     checkWalletConnection();
   }, []);
+
+  useEffect(() => {
+
+    fetchUserNFT();
+
+    if (currentAccount) {
+      console.log(`Authenticated with ${currentAccount}`);
+      fetchUserNFT();
+    }
+  }, [currentAccount]);
 
   return (
     <div className="App">
