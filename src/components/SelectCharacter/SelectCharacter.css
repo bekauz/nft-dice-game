@@ -1,0 +1,16 @@
+.character-mint-options {
+    display: flex;
+    justify-content: space-between;
+}
+
+.character-selection-box img {
+    width: 11vw;
+    height: auto;
+    height: 13vh;
+    border-radius: 5px;
+}
+
+.character-selection-box li {
+    text-align: left;
+    font-size: 16px;
+}
