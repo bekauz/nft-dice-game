@@ -10,7 +10,7 @@ declare var window: any
 const SelectCharacter = ({ setCharacterNFT }) => {
 
   const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
-  const [gameContract, setGameContract] = useState<Contract | undefined>(undefined);
+  const [gameContract, setGameContract] = useState<Contract | null>(null);
 
   const mintCharacterNFT = (charId) => async () => {
     if (gameContract) {
@@ -61,16 +61,16 @@ const SelectCharacter = ({ setCharacterNFT }) => {
       setAvailableCharacters(availableCharacters);
     };
 
-    const onCharacterMintEvent = async (sender: any, tokenId: string, characterId: string) => {
-      console.log(`Character NFT successfully minted by: ${sender} \n
-        with tokenId: ${tokenId} \nand characterId: ${characterId}`);
-      
+    const onCharacterMintEvent = async (tokenId: string, name: string) => {
+      console.log(`Character NFT ${name} successfully with tokenId: ${tokenId}`);
+      console.log(`See it on openSea: https://testnets.opensea.io/assets/${CONTRACT_ADDRESS}/${tokenId}`);
       if (gameContract) {
         const userCharacterNFT = await gameContract.getUserNFT();
         console.log("User owns character nft: ", userCharacterNFT);
         setCharacterNFT(transformCharacterData(userCharacterNFT));
       }
     };
+
     // if hook triggered and gameContract is nonnull, get characters
     if (gameContract) {
       getCharacters();

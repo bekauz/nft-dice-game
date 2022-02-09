@@ -5,6 +5,7 @@ import { Contract, ethers } from "ethers";
 import { JsonRpcProvider, JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import gameABI from "./utils/Game.json";
+import GameTable from './components/GameTable/GameTable';
 
 
 declare var window: any
@@ -83,7 +84,7 @@ function App() {
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
     } else {
       return (
-        <div></div>
+        <GameTable characterNFT={characterNFT}></GameTable>
       );
     }
   };
