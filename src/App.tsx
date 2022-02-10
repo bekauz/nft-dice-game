@@ -131,7 +131,6 @@ function App() {
       <div className="data-container">
         <div className="header-container">
           <p className="header">Dice game</p>
-          <p className="sub-header">Connect the wallet on Rinkeby to play</p>
         </div>
         {renderContent()}
       </div>
