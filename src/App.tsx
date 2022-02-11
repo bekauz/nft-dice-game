@@ -84,7 +84,7 @@ function App() {
       return <SelectCharacter setCharacterNFT={setCharacterNFT} />;
     } else {
       return (
-        <GameTable characterNFT={characterNFT}></GameTable>
+        <GameTable characterNFT={characterNFT} setCharacterNFT={setCharacterNFT}></GameTable>
       );
     }
   };

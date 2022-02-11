@@ -1,4 +1,4 @@
-import { Contract, ethers } from 'ethers';
+import { BigNumber, Contract, ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import './GameTable.css';
 import gameABI from "./../../utils/Game.json";
@@ -7,10 +7,11 @@ import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 
 declare var window: any
 
-const GameTable = ({ characterNFT }) => {
+const GameTable = ({ characterNFT, setCharacterNFT }) => {
 
     const [gameContract, setGameContract] = useState<Contract | null>(null);
     const [opponent, setOpponent] = useState<any>(null);
+    const [gameState, setGameState] = useState<string>('');
     
     useEffect(() => {
 
@@ -18,12 +19,29 @@ const GameTable = ({ characterNFT }) => {
             const opponentTxn = await gameContract?.getOpponent();
             console.log("Opponent: ", opponentTxn);
             setOpponent(transformCharacterData(opponentTxn));
-
         };
 
+        const onDiceRoll = (playerRoll: BigNumber, opponentRoll: BigNumber) => {
+            console.log("Player rolled: ", playerRoll);
+            console.log("Opponent rolled: ", opponentRoll);
+
+            // TODO: update contract to emit new balances along with diceRolls
+            // setCharacterNFT((previous) => { });
+
+            // setOpponent((previous) => { });
+            
+        };
+        
         if (gameContract) {
             fetchOpponent();
+            gameContract.on('DiceRoll', onDiceRoll);
         }
+
+        return () => {
+            if (gameContract) {
+                gameContract.off('DiceRoll', onDiceRoll);
+            }
+        };
     }, [gameContract]);
 
     useEffect(() => {
@@ -42,44 +60,70 @@ const GameTable = ({ characterNFT }) => {
             console.log("game contract address: ", contract.address);
             setGameContract(contract);
           } else {
-          console.log("No eth object found");
+            console.log("No eth object found");
           }
-    });
+    }, []);
 
-    function renderProgressBar() {
-        if (opponent.currentFunds > opponent.maxFunds) {
+    function renderProgressBar(player: any) {
+        if (player.currentFunds > player.maxFunds) {
             return (
-                <progress value={opponent.maxFunds} max={opponent.currentFunds} />
+                <progress value={player.maxFunds} max={player.currentFunds} />
             );
         } else {
             return (
-                <progress value={opponent.currentFunds} max={opponent.maxFunds} />
+                <progress value={player.currentFunds} max={player.maxFunds} />
             );
         }
     }
 
     const rollTheDice = async () => {
-        
+        try {
+            if (gameContract) {
+                setGameState('rolling');
+                console.log("rolling the dice");
+                let txn = await gameContract.rollTheDice();
+                await txn.wait();
+            }
+        } catch (err) {
+            console.log("Game contract not available.");
+        } finally {
+            setGameState('');
+        }
     };
      
     return (
         <div className="game-table">
             {opponent && (
-                <div className="opponent-container">
-                    <h2>{opponent.name}</h2>
+                <div className={`opponent-container ${gameState}`}>
+                    <h2>Opponent {opponent.name}</h2>
                     <div className="image-content">
                         <img 
                             src={opponent.imageURI} 
                             alt={`Opponent ${opponent.name}`} />
                         <div className="funds-bar">
-                        {renderProgressBar()}
+                        {renderProgressBar(opponent)}
                         <p>{`${opponent.currentFunds} / ${opponent.maxFunds} `}</p>
                         </div>
                     </div>
                     <div className="play-container">
                         <button className="cta-button" onClick={rollTheDice}>
-                            {`Roll the dice`}
+                            {`Roll the dice against ${opponent.name}`}
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {characterNFT && (
+                <div className="player-container">
+                    <h4>{characterNFT.name}</h4>
+                    <div className="image-content">
+                        <img 
+                            src={characterNFT.imageURI} 
+                            alt={`Player ${characterNFT.name}`} />
+                        <div className="funds-bar">
+                        {renderProgressBar(characterNFT)}
+                        <p>{`${characterNFT.currentFunds} / ${characterNFT.maxFunds} `}</p>
+                        </div>
                     </div>
                 </div>
             )}
