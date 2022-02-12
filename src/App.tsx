@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import SelectCharacter from "./components/SelectCharacter/SelectCharacter";
 import { Contract, ethers } from "ethers";
-import { JsonRpcProvider, JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import gameABI from "./utils/Game.json";
 import GameTable from './components/GameTable/GameTable';

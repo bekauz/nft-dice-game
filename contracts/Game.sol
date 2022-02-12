@@ -41,7 +41,12 @@ contract Game is ERC721 {
 
 
     event CharacterMint(uint256 tokenId, string name);
-    event DiceRoll(uint256 playerRoll, uint256 opponentRoll);
+    event DiceRoll(
+        uint256 playerRoll,
+        uint256 opponentRoll,
+        uint256 newPlayerFunds,
+        uint256 newOpponentFunds
+    );
 
     constructor(
         string[] memory names,
@@ -157,8 +162,6 @@ contract Game is ERC721 {
             opponentRoll = generateSeeminglyRandomNumber(opponent.name);
         }
 
-        emit DiceRoll(playerRoll, opponentRoll);
-
         console.log("player roll: %s", playerRoll);
         console.log("opponent roll: %s", opponentRoll);
 
@@ -180,7 +183,8 @@ contract Game is ERC721 {
                 opponent.currentFunds += playerCharacter.currentFunds;
                 playerCharacter.currentFunds = 0;
             }
-        }   
+        }
+        emit DiceRoll(playerRoll, opponentRoll, playerCharacter.currentFunds, opponent.currentFunds);
     }
 
     function generateSeeminglyRandomNumber(string memory name) private view returns (uint256) {

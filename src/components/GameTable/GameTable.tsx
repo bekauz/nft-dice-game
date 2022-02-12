@@ -21,14 +21,27 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             setOpponent(transformCharacterData(opponentTxn));
         };
 
-        const onDiceRoll = (playerRoll: BigNumber, opponentRoll: BigNumber) => {
+        const onDiceRoll = (
+            playerRoll: BigNumber,
+            opponentRoll: BigNumber,
+            playerFunds: BigNumber,
+            opponentFunds: BigNumber
+        ) => {
             console.log("Player rolled: ", playerRoll);
             console.log("Opponent rolled: ", opponentRoll);
+            console.log(`player balance: ${playerFunds}, opponent: ${opponentFunds}`);
+            // update funds
+            setCharacterNFT((previous) => { 
+                return { 
+                    ...previous, currentFunds: playerFunds,
+                }            
+            });
 
-            // TODO: update contract to emit new balances along with diceRolls
-            // setCharacterNFT((previous) => { });
-
-            // setOpponent((previous) => { });
+            setOpponent((previous) => {
+                return {
+                    ...previous, currentFunds: opponentFunds,
+                }
+            });
             
         };
         
@@ -91,7 +104,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
         }
     };
      
-    return (
+    return (    
         <div className="game-table">
             {opponent && (
                 <div className={`opponent-container ${gameState}`}>
