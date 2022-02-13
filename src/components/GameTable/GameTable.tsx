@@ -4,6 +4,7 @@ import './GameTable.css';
 import gameABI from "./../../utils/Game.json";
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 
 declare var window: any
 
@@ -27,8 +28,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             playerFunds: BigNumber,
             opponentFunds: BigNumber
         ) => {
-            console.log("Player rolled: ", playerRoll);
-            console.log("Opponent rolled: ", opponentRoll);
+            console.log(`Player roll: ${playerRoll}, opponent: ${opponentRoll}`);
             console.log(`player balance: ${playerFunds}, opponent: ${opponentFunds}`);
             // update funds
             setCharacterNFT((previous) => { 
@@ -123,6 +123,12 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
                             {`Roll the dice against ${opponent.name}`}
                         </button>
                     </div>
+                    {gameState == 'rolling' && (
+                        <div className="loading-indicator">
+                            <LoadingIndicator />
+                            <p>Rolling..</p>
+                        </div>
+                    )}
                 </div>
             )}
 

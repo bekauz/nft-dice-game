@@ -4,6 +4,7 @@ import { Contract, ethers } from 'ethers';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
 import gameABI from "./../../utils/Game.json";
+import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 
 declare var window: any
 
@@ -11,16 +12,20 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 
   const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
   const [gameContract, setGameContract] = useState<Contract | null>(null);
+  const [mintingCharacter, setMintingCharacter] = useState<boolean>(false);
 
-  const mintCharacterNFT = (charId) => async () => {
+  const mintCharacterNFT = (charId: number) => async () => {
     if (gameContract) {
       console.log("Minting character:");
       try {
+        setMintingCharacter(true);
         const mintTxn = await gameContract.mintCharacterNFT(charId);
         await mintTxn.wait();
         console.log("transaction minted: ", mintTxn);
       } catch(err) {
         console.warn("Mint error:", err);
+      } finally {
+        setMintingCharacter(false);
       }
     } else {
       console.log("No contract available");
@@ -106,10 +111,20 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 
   return (
     <div className="select-character-container">
-      <h2>Select your character:</h2>
-      <div className="character-mint-options">
-        {renderCharacterSelection()}
-      </div>
+      {mintingCharacter
+          ? <div className="loading">
+              <div className="indicator">
+                <LoadingIndicator />
+                <p>Minting a character..</p>
+              </div>
+            </div>
+          : <div>
+              <h2>Select your character:</h2>
+              <div className="character-mint-options">
+                {availableCharacters.length > 0 && renderCharacterSelection()}
+              </div>
+            </div>
+      }
     </div>
   );
 };

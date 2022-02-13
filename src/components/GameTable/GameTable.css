@@ -4,3 +4,7 @@
     height: 13vh;
     border-radius: 5px;
 }
+
+.loading-indicator {
+    padding: 20px;
+}

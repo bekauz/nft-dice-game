@@ -6,16 +6,18 @@ import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
 import gameABI from "./utils/Game.json";
 import GameTable from './components/GameTable/GameTable';
-
+import LoadingIndicator from './components/LoadingIndicator/LoadingIndicator';
 
 declare var window: any
 
 function App() {
 
-  const [currentAccount, setCurrentAccount] = useState<string | undefined>(undefined);
-  const [characterNFT, setCharacterNFT] = useState(undefined);
+  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
+  const [characterNFT, setCharacterNFT] = useState(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsLoading(true);
     checkWalletConnection();
   }, []);
 
@@ -25,6 +27,7 @@ function App() {
 
       if (!ethereum) {
         console.log("no wallet found");
+        setIsLoading(false);
         return;
       } else {
         console.log("ethereum object: ", ethereum);
@@ -44,6 +47,7 @@ function App() {
     } catch (err) {
       console.log(err);
     }
+    setIsLoading(false);
   };
 
   const connectWallet = async () => {
@@ -67,6 +71,9 @@ function App() {
   };
 
   const renderContent = () => {
+    if (isLoading) {
+      return <LoadingIndicator />
+    }
     if (!currentAccount) {
       console.log("no authenticated account found");
       return (
@@ -118,6 +125,8 @@ function App() {
       } else {
         console.log('No character found');
       }
+      // once everything is loaded, disable loading state
+      setIsLoading(false);
     };
 
     if (currentAccount) {
