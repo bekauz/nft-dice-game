@@ -111,7 +111,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
                     <h2>Opponent {opponent.name}</h2>
                     <div className="image-content">
                         <img 
-                            src={opponent.imageURI} 
+                            src={`https://cloudflare-ipfs.com/ipfs/${opponent.imageURI}`}
                             alt={`Opponent ${opponent.name}`} />
                         <div className="funds-bar">
                         {renderProgressBar(opponent)}
@@ -137,7 +137,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
                     <h4>{characterNFT.name}</h4>
                     <div className="image-content">
                         <img 
-                            src={characterNFT.imageURI} 
+                            src={`https://cloudflare-ipfs.com/ipfs/${characterNFT.imageURI}`}
                             alt={`Player ${characterNFT.name}`} />
                         <div className="funds-bar">
                         {renderProgressBar(characterNFT)}

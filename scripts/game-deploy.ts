@@ -6,14 +6,14 @@ async function main() {
     const gameContract = await gameContractFactory.deploy(
         ["test-1", "test-2", "test-3"], // names
         [
-            "https://i.imgur.com/aodcS9h.jpeg",
-            "https://i.imgur.com/rBw3HgN.jpeg",
-            "https://i.imgur.com/xIHzkoA.jpeg"
+            "QmPTQtjpgcfMB2jPmajV4LcfEEbUYRh9omABu5F2zLTMia?filename=character-1.jpeg",
+            "QmcHDikSuFjq5TzfUXzB5v1w3A84qEwSEyzKvbRQqVL7mm?filename=character-2.jpeg",
+            "Qmbmw632uXTXfWv2HXtUo2DbhotLjuui8hsKSLvAi7bns8?filename=character-3.jpeg"
         ], // imgURIs
         [100, 125, 120], // initial funds
         [50, 30, 10], // wager sizes
         "test-4",
-        "https://i.imgur.com/TcIFNT0.jpeg",
+        "QmU1y5T85WSmZ8svP1QbVZJfTeVFtEt1c18jetbNXrumJ2",
         1500,
         70,
     );

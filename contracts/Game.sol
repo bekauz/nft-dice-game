@@ -118,7 +118,7 @@ contract Game is ERC721 {
         string memory json = Base64.encode(abi.encodePacked(
             '{"name": "', charTraits.name,
                 ' -- NFT #: ', Strings.toString(_tokenId),
-                '", "description": "NFT that is used to play the dice game.", "image": "',
+                '", "description": "NFT that is used to play the dice game.", "image": "ipfs://',
                 charTraits.imageURI,
                 '", "attributes": [ { "trait_type": "Funds", "value": ',currentFundsStr,', "max_value":',maxFundsStr,'}, { "trait_type": "Wager Size", "value": ',
                 wagerSizeStr,

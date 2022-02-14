@@ -94,7 +94,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
     availableCharacters.map(
       (character, index) => (
         <div className="character-selection-box">
-          <img src={character.imageURI} alt={character.name}></img>
+          <img src={`https://cloudflare-ipfs.com/ipfs/${character.imageURI}`} alt={character.name}></img>
           <h4>{character.name}</h4>
           <ul className="character-attributes">
             <li>Wager size: {character.wagerSize}</li>
