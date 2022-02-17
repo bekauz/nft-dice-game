@@ -3,7 +3,8 @@ import './SelectCharacter.css';
 import { Contract, ethers } from 'ethers';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
-import gameABI from "./../../utils/Game.json";
+// import gameABI from "./../../utils/Game.json";
+import gameABI from "./../../utils/TrulyRandomGame.json";
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
 
 declare var window: any

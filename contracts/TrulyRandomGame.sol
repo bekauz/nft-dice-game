@@ -22,12 +22,6 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
     // address to its owned token id
     mapping(address => uint256) public ownerCharacterIds;
 
-    // unique hash for each oracle job
-    bytes32 private s_keyHash;
-    // fee for the oracle job
-    uint256 private s_fee;
-
-
     event CharacterMint(uint256 tokenId, string name);
     event DiceRoll(
         uint256 playerRoll,
@@ -35,6 +29,19 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
         uint256 newPlayerFunds,
         uint256 newOpponentFunds
     );
+
+    // unique hash for each oracle job
+    bytes32 private s_keyHash;
+    // fee for the oracle job
+    uint256 private s_fee;
+    // store requestId -> player address
+    mapping(bytes32 => address) private s_rollers;
+    // store player -> dice roll results
+    mapping(address => uint256) private s_results;
+    uint256 private constant ROLL_IN_PROGRESS = 42;
+    // signal the start of dice roll
+    event DiceRolled(bytes32 indexed requestId, address indexed roller);
+    event DiceLanded(bytes32 indexed requestId, uint256 indexed result);
 
     constructor(
         string[] memory names,
@@ -78,11 +85,32 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
     }
 
     function rollTheDice() public override {
-        // TODO
+        // validate oracle fee
+        require(LINK.balanceOf(address(this)) >= s_fee, "Not enough LINK to pay fee");
+
+        // request randomness
+        bytes32 requestId = requestRandomness(s_keyHash, s_fee);
+
+        // store the request id -> player mapping
+        s_rollers[requestId] = msg.sender;
+
+        // emit the event to signal rolling in progress
+        s_results[msg.sender] = ROLL_IN_PROGRESS;
+        emit DiceRolled(requestId, msg.sender);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        // TODO
+
+        // transform the randomness into double d6 roll
+        uint256 twoD6Value = (randomness % 12) + 2;
+
+        // assign the transformed value to the address of player who initiated the request
+        s_results[s_rollers[requestId]] = twoD6Value;
+
+        // emit the event indicating dice roll result
+        emit DiceLanded(requestId, twoD6Value);
+
+        // TODO: add the game logic based on the roll
     }
 
     function mintCharacterNFT(uint256 _characterIndex) external override {

@@ -1,7 +1,8 @@
 import { BigNumber, Contract, ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import './GameTable.css';
-import gameABI from "./../../utils/Game.json";
+// import gameABI from "./../../utils/Game.json";
+import gameABI from "./../../utils/TrulyRandomGame.json";
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
@@ -44,15 +45,33 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             });
             
         };
+
+        const onDiceRolled = (
+            requestId: any,
+            address: any,
+        ) => {
+            console.log(`Player ${address} rolled the dice with requestId ${requestId}`);
+        }
+
+        const onDiceLanded = (
+            requestId: any,
+            result: BigNumber
+        ) => {
+            console.log(`Dice landed: ${result}`);
+            console.log(`requestId: ${requestId}`);
+        };
         
         if (gameContract) {
-            fetchOpponent();
-            gameContract.on('DiceRoll', onDiceRoll);
+            fetchOpponent()
+            // gameContract.on('DiceRoll', onDiceRoll);
+            gameContract.on('DiceRolled', onDiceRolled);
+            gameContract.on('DiceLanded', onDiceLanded);
         }
 
         return () => {
             if (gameContract) {
-                gameContract.off('DiceRoll', onDiceRoll);
+                // gameContract.off('DiceRoll', onDiceRoll);
+                // gameContract.off('DiceLanded', onDiceLanded);
             }
         };
     }, [gameContract]);

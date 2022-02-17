@@ -4,7 +4,8 @@ import SelectCharacter from "./components/SelectCharacter/SelectCharacter";
 import { Contract, ethers } from "ethers";
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from "./constants";
-import gameABI from "./utils/Game.json";
+// import gameABI from "./utils/Game.json";
+import gameABI from "./utils/TrulyRandomGame.json";
 import GameTable from './components/GameTable/GameTable';
 import LoadingIndicator from './components/LoadingIndicator/LoadingIndicator';
 

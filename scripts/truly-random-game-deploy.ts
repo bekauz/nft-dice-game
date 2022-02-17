@@ -16,8 +16,8 @@ async function main() {
         "QmU1y5T85WSmZ8svP1QbVZJfTeVFtEt1c18jetbNXrumJ2",
         1500,
         70,
-        "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B", // chainlink rinkeby vrf coordinator
-        "0x01BE23585060835E02B77ef475b0Cc51aA1e0709", // chainlink rinkeby LINK token address 
+        // "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B", // chainlink rinkeby vrf coordinator
+        // "0x01BE23585060835E02B77ef475b0Cc51aA1e0709", // chainlink rinkeby LINK token address 
     );
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
