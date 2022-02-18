@@ -23,7 +23,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             setOpponent(transformCharacterData(opponentTxn));
         };
 
-        const onDiceRoll = (
+        const onDiceRollResult = (
             playerRoll: BigNumber,
             opponentRoll: BigNumber,
             playerFunds: BigNumber,
@@ -43,7 +43,6 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
                     ...previous, currentFunds: opponentFunds,
                 }
             });
-            
         };
 
         const onDiceRolled = (
@@ -63,14 +62,14 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
         
         if (gameContract) {
             fetchOpponent()
-            // gameContract.on('DiceRoll', onDiceRoll);
+            gameContract.on('DiceRollResult', onDiceRollResult);
             gameContract.on('DiceRolled', onDiceRolled);
             gameContract.on('DiceLanded', onDiceLanded);
         }
 
         return () => {
             if (gameContract) {
-                // gameContract.off('DiceRoll', onDiceRoll);
+                gameContract.off('DiceRollResult', onDiceRollResult);
                 // gameContract.off('DiceLanded', onDiceLanded);
             }
         };

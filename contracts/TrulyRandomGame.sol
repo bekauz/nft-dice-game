@@ -23,12 +23,20 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
     mapping(address => uint256) public ownerCharacterIds;
 
     event CharacterMint(uint256 tokenId, string name);
-    event DiceRoll(
+    event DiceRolled(bytes32 indexed requestId, address indexed roller);
+    event DiceLanded(bytes32 indexed requestId, uint256 indexed playerResult, uint256 indexed opponentResult);
+
+    event DiceRollResult(
         uint256 playerRoll,
         uint256 opponentRoll,
         uint256 newPlayerFunds,
         uint256 newOpponentFunds
     );
+
+    struct RollResultPair {
+        uint256 playerRoll;
+        uint256 opponentRoll;
+    }
 
     // unique hash for each oracle job
     bytes32 private s_keyHash;
@@ -37,11 +45,9 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
     // store requestId -> player address
     mapping(bytes32 => address) private s_rollers;
     // store player -> dice roll results
-    mapping(address => uint256) private s_results;
+    mapping(address => RollResultPair) private s_results;
     uint256 private constant ROLL_IN_PROGRESS = 42;
     // signal the start of dice roll
-    event DiceRolled(bytes32 indexed requestId, address indexed roller);
-    event DiceLanded(bytes32 indexed requestId, uint256 indexed result);
 
     constructor(
         string[] memory names,
@@ -85,9 +91,13 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
     }
 
     function rollTheDice() public override {
+        uint256 tokenId = ownerCharacterIds[msg.sender];
+        require(tokenId > 0, "No NFT found for this address");
+        CharacterTraits storage playerCharacter = characterMetadata[tokenId];
+        require(playerCharacter.currentFunds > 0, "player has no funds");
+        require(opponent.currentFunds > 0, "opponent has no funds");
         // validate oracle fee
         require(LINK.balanceOf(address(this)) >= s_fee, "Not enough LINK to pay fee");
-
         // request randomness
         bytes32 requestId = requestRandomness(s_keyHash, s_fee);
 
@@ -95,22 +105,46 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
         s_rollers[requestId] = msg.sender;
 
         // emit the event to signal rolling in progress
-        s_results[msg.sender] = ROLL_IN_PROGRESS;
+        s_results[msg.sender] = RollResultPair(ROLL_IN_PROGRESS, ROLL_IN_PROGRESS);
         emit DiceRolled(requestId, msg.sender);
     }
 
     function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-
-        // transform the randomness into double d6 roll
-        uint256 twoD6Value = (randomness % 12) + 2;
+        // TODO: try to avoid modulo bias
+        // use the randomness two generate two random dice rolls
+        // transform the randomness into double d6 roll (player)
+        uint256 playerRoll = (randomness % 11) + 2;
+        // transform the randomness into a single d6 roll and double it (opponent)
+        uint256 opponentRoll = ((randomness % 6) + 1) * 2;
 
         // assign the transformed value to the address of player who initiated the request
-        s_results[s_rollers[requestId]] = twoD6Value;
+        s_results[s_rollers[requestId]] = RollResultPair(playerRoll, opponentRoll);
 
         // emit the event indicating dice roll result
-        emit DiceLanded(requestId, twoD6Value);
+        emit DiceLanded(requestId, playerRoll, opponentRoll);
 
-        // TODO: add the game logic based on the roll
+        CharacterTraits storage playerCharacter = characterMetadata[ownerCharacterIds[s_rollers[requestId]]];
+
+        if (playerRoll > opponentRoll) {
+            // opponent loses and gives away his wager to the player
+            if (opponent.currentFunds >= opponent.wagerSize) {
+                playerCharacter.currentFunds += opponent.wagerSize;
+                opponent.currentFunds -= opponent.wagerSize;
+            } else {
+                playerCharacter.currentFunds += opponent.currentFunds;
+                opponent.currentFunds = 0;
+            }
+        } else if (playerRoll < opponentRoll) {
+            // player loses and gives away his wager to the opponent
+            if (playerCharacter.currentFunds >= playerCharacter.wagerSize) {
+                opponent.currentFunds += playerCharacter.wagerSize;
+                playerCharacter.currentFunds -= playerCharacter.wagerSize;
+            } else {
+                opponent.currentFunds += playerCharacter.currentFunds;
+                playerCharacter.currentFunds = 0;
+            }
+        }
+        emit DiceRollResult(playerRoll, opponentRoll, playerCharacter.currentFunds, opponent.currentFunds);
     }
 
     function mintCharacterNFT(uint256 _characterIndex) external override {
