@@ -3,15 +3,15 @@ import './SelectCharacter.css';
 import { Contract, ethers } from 'ethers';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
-// import gameABI from "./../../utils/Game.json";
 import gameABI from "./../../utils/TrulyRandomGame.json";
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
+import { ICharacter } from '../../interfaces/GameCharacters';
 
 declare var window: any
 
 const SelectCharacter = ({ setCharacterNFT }) => {
 
-  const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
+  const [availableCharacters, setAvailableCharacters] = useState<ICharacter[]>([]);
   const [gameContract, setGameContract] = useState<Contract | null>(null);
   const [mintingCharacter, setMintingCharacter] = useState<boolean>(false);
 
@@ -93,7 +93,7 @@ const SelectCharacter = ({ setCharacterNFT }) => {
 
   const renderCharacterSelection = () => (
     availableCharacters.map(
-      (character, index) => (
+      (character: ICharacter, index: number) => (
         <div className="character-selection-box">
           <img src={`https://cloudflare-ipfs.com/ipfs/${character.imageURI}`} alt={character.name}></img>
           <h4>{character.name}</h4>

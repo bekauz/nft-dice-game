@@ -1,18 +1,24 @@
 import { BigNumber, Contract, ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import './GameTable.css';
-// import gameABI from "./../../utils/Game.json";
 import gameABI from "./../../utils/TrulyRandomGame.json";
 import { CONTRACT_ADDRESS, transformCharacterData } from '../../constants';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import LoadingIndicator from '../LoadingIndicator/LoadingIndicator';
+import { ICharacter, IOpponent } from '../../interfaces/GameCharacters';
 
 declare var window: any
 
 const GameTable = ({ characterNFT, setCharacterNFT }) => {
 
     const [gameContract, setGameContract] = useState<Contract | null>(null);
-    const [opponent, setOpponent] = useState<any>(null);
+    const [opponent, setOpponent] = useState<IOpponent>({
+        currentFunds: BigNumber.from(0),
+        maxFunds: BigNumber.from(0),
+        name: '',
+        imageURI: '',
+        wagerSize: BigNumber.from(0)
+    });
     const [gameState, setGameState] = useState<string>('');
     
     useEffect(() => {
@@ -32,17 +38,8 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             console.log(`Player roll: ${playerRoll}, opponent: ${opponentRoll}`);
             console.log(`player balance: ${playerFunds}, opponent: ${opponentFunds}`);
             // update funds
-            setCharacterNFT((previous) => { 
-                return { 
-                    ...previous, currentFunds: playerFunds,
-                }            
-            });
-
-            setOpponent((previous) => {
-                return {
-                    ...previous, currentFunds: opponentFunds,
-                }
-            });
+            setCharacterNFT((previous: ICharacter) => ({...previous, currentFunds: playerFunds}));
+            setOpponent((previous: IOpponent) => ({...previous, currentFunds: opponentFunds}));
         };
 
         const onDiceRolled = (
@@ -70,7 +67,6 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
         return () => {
             if (gameContract) {
                 gameContract.off('DiceRollResult', onDiceRollResult);
-                // gameContract.off('DiceLanded', onDiceLanded);
             }
         };
     }, [gameContract]);
