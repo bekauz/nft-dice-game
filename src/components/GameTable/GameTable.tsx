@@ -55,6 +55,7 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
         ) => {
             console.log(`Dice landed: ${result}`);
             console.log(`requestId: ${requestId}`);
+            setGameState('');
         };
         
         if (gameContract) {
@@ -113,8 +114,6 @@ const GameTable = ({ characterNFT, setCharacterNFT }) => {
             }
         } catch (err) {
             console.log("Game contract not available.");
-        } finally {
-            setGameState('');
         }
     };
      

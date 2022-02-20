@@ -33,21 +33,12 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
         uint256 newOpponentFunds
     );
 
-    struct RollResultPair {
-        uint256 playerRoll;
-        uint256 opponentRoll;
-    }
-
     // unique hash for each oracle job
     bytes32 private s_keyHash;
     // fee for the oracle job
     uint256 private s_fee;
     // store requestId -> player address
     mapping(bytes32 => address) private s_rollers;
-    // store player -> dice roll results
-    mapping(address => RollResultPair) private s_results;
-    uint256 private constant ROLL_IN_PROGRESS = 42;
-    // signal the start of dice roll
 
     constructor(
         string[] memory names,
@@ -105,7 +96,6 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
         s_rollers[requestId] = msg.sender;
 
         // emit the event to signal rolling in progress
-        s_results[msg.sender] = RollResultPair(ROLL_IN_PROGRESS, ROLL_IN_PROGRESS);
         emit DiceRolled(requestId, msg.sender);
     }
 
@@ -116,9 +106,6 @@ contract TrulyRandomGame is DiceGameInterface, ERC721, VRFConsumerBase {
         uint256 playerRoll = (randomness % 11) + 2;
         // transform the randomness into a single d6 roll and double it (opponent)
         uint256 opponentRoll = ((randomness % 6) + 1) * 2;
-
-        // assign the transformed value to the address of player who initiated the request
-        s_results[s_rollers[requestId]] = RollResultPair(playerRoll, opponentRoll);
 
         // emit the event indicating dice roll result
         emit DiceLanded(requestId, playerRoll, opponentRoll);
